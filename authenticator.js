@@ -45,6 +45,10 @@ module.exports.authenticate = (params) => {
     const token = getToken(params);
 
     const decoded = jwt.decode(token, { complete: true });
+    
+    console.log("-- DECODED TOKEN CONTENT --");
+    console.log(decoded);
+
     if (!decoded || !decoded.header || !decoded.header.kid) {
         throw new Error('invalid token');
     }
@@ -65,6 +69,10 @@ module.exports.authenticate = (params) => {
         .then((decoded)=> ({
             principalId: decoded.sub,
             policyDocument: getPolicyDocument('Allow', params.methodArn),
-            context: { scope: decoded.scope }
+            context: { 
+                scope: decoded.scope,
+                customerID: decoded[process.env.AUDIENCE + 'customerID'],
+                commercialLabelID: decoded[process.env.AUDIENCE + 'commercialLabel']
+            }
         }));
 }
